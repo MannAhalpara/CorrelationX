@@ -1,9 +1,12 @@
 import pandas as pd
 from sqlalchemy import create_engine
+import os
+from dotenv import load_dotenv
 
-engine = create_engine(
-    "postgresql://neondb_owner:npg_GN7uD0xOIXpR@ep-icy-heart-ao8tz1lj-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-)
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 query = """
 SELECT ticker

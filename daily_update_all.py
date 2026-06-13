@@ -3,9 +3,13 @@ import yfinance as yf
 
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
-    
-engine = create_engine("postgresql://neondb_owner:npg_GN7uD0xOIXpR@ep-icy-heart-ao8tz1lj-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 # Get only research universe stocks
 query = """
 SELECT ticker
