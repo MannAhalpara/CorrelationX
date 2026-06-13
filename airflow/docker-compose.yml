@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+
+  airflow-postgres:
+    image: postgres:16
+    container_name: airflow-postgres
+
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+
+    ports:
+      - "5433:5432"
+
+  airflow-init:
+    build: .
+
+    depends_on:
+      - airflow-postgres
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: correlationx_secret_key
+
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/correlationx
+
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Mann
+      --lastname Admin
+      --role Admin
+      --email admin@example.com || true
+      "
+
+  airflow-webserver:
+    build: .
+
+    container_name: airflow-webserver
+
+    restart: always
+
+    depends_on:
+      - airflow-postgres
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../:/opt/airflow/project
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: correlationx_secret_key
+
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/correlationx
+
+    command: webserver
+
+  airflow-scheduler:
+    build: .
+
+    container_name: airflow-scheduler
+
+    restart: always
+
+    depends_on:
+      - airflow-webserver
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../:/opt/airflow/project
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: correlationx_secret_key
+
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/correlationx
+
+    command: scheduler
