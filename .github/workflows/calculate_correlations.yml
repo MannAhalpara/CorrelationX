@@ -1,0 +1,33 @@
+name: Calculate Correlations
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 11 * * 6'
+
+jobs:
+
+  calculate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Calculate Correlations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python calculate_correlations.py
